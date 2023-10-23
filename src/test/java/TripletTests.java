@@ -43,10 +43,6 @@ public class TripletTests {
         for (int i=0; i < 15 ;i++){
             tQueue.addFirst("n_"+i);
         }
-
-        for (String s : tQueue) {
-            System.out.println(s);
-        }
     }
 
     @Test
@@ -107,6 +103,7 @@ public class TripletTests {
         }
 
         for(int i = aBunchOfString.length - 1; i >= 0; i--){
+
             assertEquals(aBunchOfString[i], tQueue.removeLast());
         }
     }
@@ -151,7 +148,8 @@ public class TripletTests {
         }
 
         for(int i = 0; i < 100; i++){
-            assertEquals(String.valueOf(i), tQueue.removeFirst());
+            String deleted = tQueue.removeFirst();
+            assertEquals(String.valueOf(i), deleted);
         }
 
     }
@@ -165,7 +163,7 @@ public class TripletTests {
 
 
         for(int i = 0; i < 100; i++){
-            tQueue.addLast( String.valueOf(i) );
+            tQueue.addLast( String.valueOf(i));
             assertEquals(String.valueOf(i), tQueue.removeLast());
         }
 
@@ -209,6 +207,7 @@ public class TripletTests {
             assertEquals( String.valueOf(j), anIterator.next());
             j--;
         }
+
     }
 
     @Test
@@ -279,7 +278,6 @@ public class TripletTests {
         cntr = cQueue.getContainerByIndex(0);
         cntr1 = cQueue.getContainerByIndex(1);
         cntr2 = cQueue.getContainerByIndex(2);
-
         Assertions.assertTrue(cntr!=null && cntr1 != null && cntr2 ==null);
 
     }

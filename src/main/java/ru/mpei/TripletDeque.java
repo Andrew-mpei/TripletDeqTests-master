@@ -43,6 +43,8 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
                         firstTriplet.setLeftLink(newTriplet);//присваиваем изначальному триплету левую ссылку на newTriplet (наш новый второй триплет)
                         newTriplet.setRightLink(firstTriplet);//для триплета newTriplet (новый, левый, второй триплет) присваиваем правой ссылке правый изначальный триплет
                         firstTriplet = newTriplet;// первым триплетом во всей коллекции становится наш новый триплет, который мы только что создали
+                        Object[] temp = firstTriplet.getValues();
+                        temp[0]=element;
                     } else { //здесь в массиве триплета есть свободное место, новые триплеты создавать не надо
                         Object[] temp = firstTriplet.getValues();
                         if (temp[0] != null) { //слева нулевой элемент занят, поэтому ищем свободное место в массиве, начиная справа налево
@@ -55,7 +57,7 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
                             }
                             temp[0] = element;
                         } else if (temp[4] != null) {
-                            // прописать случай, когда массив заполнен с конца
+                            // случай, когда массив заполнен с конца
                             int index = 4; // максимальный индекс 4 (5 элементов в массиве)
                             while (index >= 0)  {
                                 if (temp[index] == null){
@@ -64,14 +66,14 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
                                 }
                                 index--;
                             }
+                        }else{
+                            temp[4] = element;
                         }
 
                     }
                 }
             }
         }
-
-
     }
     //addLast
 //    Вставляет указанный элемент в конец этого списка, если это возможно сделать немедленно,
@@ -88,7 +90,7 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
 
     @Override
     public void addLast(T t) {
-        add(t);
+       add(t);
     }
     //offerFirst
 //Вставляет указанный элемент в начало этого списка, если только это не нарушит ограничения по емкости.
@@ -138,6 +140,7 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
     public T removeFirst() {
         Object[] temp = firstTriplet.getValues();//получаем значения переданного массива
         int count=0;
+        Object temp1 = null;
         if (firstTriplet == lastTriplet) {//в коллекции только 1 триплет, случаи: коллекция пустая, есть 1 элемент, есть больше 1 элемента
             for (Object o : temp) {//пустая коллекция
                 if (o == null) {
@@ -151,6 +154,7 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
                 while (temp[ii] == null) {
                     ii++;
                 }
+                temp1 = temp[ii];
                 temp[ii] = null;
             }else {//больше 1 элемента в триплете
                 if (temp[0] == null) {//элементы сдвинуты вправо
@@ -158,20 +162,29 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
                     while ((temp[i] != null) & (i > 0)) { // идем справа налево, пока элемент не null
                         i--;
                     }
+                    temp1 = temp[i+1];
                     temp[i+1] = null;//i+1 так как остановились на нулевом элементе
                 }else{//элементы сдвинуты влево, всю очередь сдвигаем влево на 1 элемент
                     if (temp[4]==null){//массив не заполнен был
+                        temp1 = temp[0];
                         count = 0;
                         while ((count<5)&(temp[count]!=null)) {
                             temp[count] = temp[count + 1];
                             count++;
                         }
                     }else{//массив был заполнен, удаляем первый элемент
+                        temp1 = temp[0];
                         temp[0]=null;
                     }
                 }
             }
         }else if(firstTriplet.checkOneEl() == true) {//есть только 1 элемент и триплетов у нас не менее два, удаляем триплет
+            // определить индекс ненулевого элемента, запомнить значение элемента, а потом менять ссылки
+            if (firstTriplet.getValues()[0]!=null){
+                temp1 = firstTriplet.getValues()[0];
+            }else{
+                temp1 = firstTriplet.getValues()[4];
+            }
             firstTriplet = firstTriplet.getRightLink();//получили ссылку правую ссылку
             firstTriplet.setLeftLink(null);//присваиваем null левой ссылке
             // ЭТА СТРОЧКА НЕ НУЖНА firstTriplet.setRightLink(null);//присваиваем null правой ссылке
@@ -180,23 +193,26 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
         } else {//больше 1 элемента в триплете
             if (temp[0] == null) {//элементы сдвинуты вправо
                 int i = 4;
-                while ((temp[i] != null) & (i > 0)) { // идем справа налево, пока элемент не null
+                while ((temp[i] != null) && (i > 0)) { // идем справа налево, пока элемент не null
                     i--;
                 }
+                temp1 = temp[i+1];
                 temp[i+1] = null;//i+1 так как остановились на нулевом элементе
             }else{//элементы сдвинуты влево, всю очередь сдвигаем влево на 1 элемент
                 if (temp[4]==null){//массив не заполнен был
+                    temp1 = temp[0];
                     count = 0;
                     while ((count<5)&(temp[count]!=null)) {
                         temp[count] = temp[count + 1];
                         count++;
                     }
                 }else{//массив был заполнен, удаляем первый элемент
+                    temp1 = temp[0];
                     temp[0]=null;
                 }
             }
         }
-        return (T) temp[0];
+        return (T) temp1;
 
     }
     //removeLast
@@ -209,6 +225,7 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
     @Override
     public T removeLast() {
         Object[] temp = lastTriplet.getValues();//получаем значения переданного массива
+        T tempReturn = null;
         int count=0;
         if (lastTriplet == firstTriplet) {//в коллекции только 1 триплет, случаи: коллекция пустая, есть 1 элемент, есть больше 1 элемента
             for (Object o : temp) {//пустая коллекция
@@ -219,61 +236,66 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
             if (count == 5) {
                 throw new NoSuchElementException("коллекция пустая");
             } else if(lastTriplet.checkOneEl() == true) {//1 триплет, 1 элемент, присваиваем ему null
-                int ii = 0;
+                int ii = 4;
                 while (temp[ii] == null) {
-                    ii++;
+                    ii--;
                 }
+                tempReturn = (T) temp[ii];
                 temp[ii] = null;
             }else {//больше 1 элементе в триплете
                 if (temp[0] == null) {//элементы сдвинуты вправо, сдвигаем вправо
+                    tempReturn = (T) temp[4];
                     count = 4;
-                    while (count>0) {
+                    while (count>0 && temp[count]!=null) {
                         temp[count] = temp[count - 1];
                         count--;
                     }
                 }else{//элементы сдвинуты влево, удаляем последний элемент
                     int i = 0;
-                    while ((i<5) & temp[i]!=null)  { // массив заполнен или сдвинут влево
+                    while ((i<5) && temp[i]!=null)  { // массив заполнен или сдвинут влево
                         i++;
                     }
-                    if (i==4){
-                        temp[4] = null;//массив был заполнен, теперь очередь сдвинута влево
-                    }else{//массив не был заполнен, он сдвинут влево
-                        int ii = 4;
-                        while (temp[ii]==null) {
-                            i--;
-                        }
-                        temp[i+1] = null;
-                    }
+                    tempReturn = (T) temp[i-1];
+                    temp[i-1] = null;//массив был заполнен, теперь очередь сдвинута влево
                 }
             }
         }else if(lastTriplet.checkOneEl() == true) {//есть только 1 элемент и триплетов у нас не менее два, удаляем триплет
+            for (Object o : lastTriplet.getValues()) {
+                if (o != null) {
+                    tempReturn = (T) o;
+                    break;
+                }
+            }
             lastTriplet = lastTriplet.getLeftLink();//получили левую ссылку
             lastTriplet.setRightLink(null);//присваиваем null правой ссылке
         } else {//больше 1 элементе в триплете
             if (temp[0] == null) {//элементы сдвинуты вправо, сдвигаем вправо
+                tempReturn = (T) temp[4];
                 count = 4;
-                while (count>0) {
+                while (count>0 && temp[count]!=null) {
                     temp[count] = temp[count - 1];
                     count--;
                 }
             }else{//элементы сдвинуты влево, удаляем последний элемент
                 int i = 0;
-                while ((i<5) & temp[i]!=null)  { // массив заполнен или сдвинут влево
+                while ((i<5) && temp[i]!=null)  { // массив заполнен или сдвинут влево
                     i++;
                 }
-                if (i==4){
+                if (i - 1 == 4){
+                    tempReturn = (T)temp[4];
                     temp[4] = null;//массив был заполнен, теперь очередь сдвинута влево
                 }else{//массив не был заполнен, он сдвинут влево
                     int ii = 4;
                     while (temp[ii]==null) {
-                        i--;
+                        ii--;
                     }
-                    temp[i+1] = null;
+                    tempReturn = (T)temp[ii];
+                    temp[ii] = null;
                 }
             }
         }
-        return (T) temp[0];
+
+        return tempReturn;
     }
     //pollFirst
 //Извлекает и удаляет первый элемент этого списка или возвращает null, если этот список пуст.
@@ -317,13 +339,13 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
     @Override
     public T getFirst() {//Сделано!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         int i=0;
-        while (i<5 && firstTriplet.getValues()[i]==null){
+        while (i<5){
             i++;
         }if (i==0){
             throw new NoSuchElementException();
         }else {
             i = 0;
-            while (i < 5 && firstTriplet.getValues() == null) {
+            while (i < 5 && firstTriplet.getValues()[i] == null) {
                 i++;
             }
             return (T) firstTriplet.getValues()[i];
@@ -333,15 +355,16 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
     @Override
     public T getLast() {//Сделано!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         int i=4;
-        while (i>=0 &&lastTriplet.getValues()[i]==null) {
+        while (i>=0) {
             i--;
         }if (i==4){
             throw new NoSuchElementException();
         }else {
             i = 4;
-            while (i>=0 && lastTriplet.getValues() == null) {
+            while (i>=0 && lastTriplet.getValues()[i] == null) {
                 i--;
             }
+
             return (T) lastTriplet.getValues()[i];
         }
 
@@ -387,63 +410,75 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
     @Override
     public boolean removeFirstOccurrence(Object temp) {
         boolean flag = false;
+        int fl = 0;//это костыль. если окажемся на последнем триплете и надо проверить там наличие элемента
         Triplet<T> newtempTriplet = firstTriplet;
         int i = 0;
-        while(flag == false | newtempTriplet.getRightLink()!=null) {//пока не найдем наш элемент или пока не дойдем до конца коллекции
+        int index = 0;
+        while(flag == false && fl<4) {//пока не найдем наш элемент или пока не дойдем до конца коллекции
             while (i < 5) {
-                if (newtempTriplet.getValues()[i] == temp) {
+                while (newtempTriplet.getValues()[i]==null){//костыль чтобы не натыкаться на сравнение строки с null
+                    i++;
+                }
+                if (newtempTriplet.getValues()[i].equals(temp)) {
                     flag = true;
+                    index = i;
+                    fl = 4;
                     break;
                 } else {
                     i++;
                 }
+
             }
-            if (flag==false){//получаем правый триплет, если не нашли элемент
+            //получаем правый триплет, если не нашли элемент
+            if (newtempTriplet.getRightLink()!=null && fl<4){
                 i = 0;
                 newtempTriplet = newtempTriplet.getRightLink();
+            }
+            if (newtempTriplet.getRightLink()==null){//Если дошли до последнего триплета. Его надо тоже проверить
+                fl++;
             }
         }
         if (flag == true){
             if (firstTriplet==lastTriplet){//1 триплет, сдвигаем вправо
-                while (i >= 0){
-                    if (i == 0){
+                while (index >= 0){
+                    if (index == 0){
                         newtempTriplet.getValues()[0] = null;
+                        break;
                     }else{ //i от 1 до 4
-                        newtempTriplet.getValues()[i]=newtempTriplet.getValues()[i-1];
+                        newtempTriplet.getValues()[index]=newtempTriplet.getValues()[index-1];
                     }
-                    i--;
+                    index--;
                 }
             }else{//триплетов больше 1
                 while (newtempTriplet.getLeftLink()!=null){//идем до первого триплета
-                    while (i >= 0){
-                        if (i==0){
+                    while (index >= 0){
+                        if (index==0){
                             newtempTriplet.getValues()[0]=newtempTriplet.getLeftLink().getValues()[4];
                             newtempTriplet = newtempTriplet.getLeftLink();
                         }else{
+                            newtempTriplet.getValues()[index]=newtempTriplet.getValues()[index-1];
+                        }
+                        index--;
+                    }
+                    index=4;
+                }
+                if (newtempTriplet.getValues()[3]==null){//дошли до конца и остался пустой первый триплет
+                    newtempTriplet = newtempTriplet.getRightLink();
+                    newtempTriplet.setLeftLink(null);// УДАЛЕНИЕ пустого триплета!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                }else{//на первом триплете
+                    i=4;
+                    while (i >= 0){
+                        if (i == 0){
+                            newtempTriplet.getValues()[0] = null;
+                        }else{ //i от 1 до 4
                             newtempTriplet.getValues()[i]=newtempTriplet.getValues()[i-1];
                         }
                         i--;
                     }
-                    i=4;
                 }
-                newtempTriplet = newtempTriplet.getLeftLink();//на первом триплете остановились
+                firstTriplet = newtempTriplet;
             }
-            if (newtempTriplet.getValues()[3]==null){//дошли до конца и остался пустой первый триплет
 
-                newtempTriplet.setRightLink(null);
-            }else{//на первом триплете
-                i=4;
-                while (i >= 0){
-                if (i == 0){
-                    newtempTriplet.getValues()[0] = null;
-                }else{ //i от 1 до 4
-                    newtempTriplet.getValues()[i]=newtempTriplet.getValues()[i-1];
-                }
-                i--;
-                }
-            }
-//            newtempTriplet.getValues()[i] = null;
-            firstTriplet = newtempTriplet;
             return true;
         }else{
             return false;
@@ -471,8 +506,7 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
 
     @Override
     public boolean add(T t) { // Ситуация противоположная addFirst. Здесь справа добавляем триплет //Сделано
-        Object[] temp = new Object[0];
-//        if (maxSizeTriplet >= count) {
+
         if (t == null) {
             throw new NullPointerException("Не можем добавить null");
         } else {
@@ -484,8 +518,10 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
                     lastTriplet.setRightLink(newTriplet1);//присваиваем изначальному триплету правую ссылку на newTriplet (наш новый второй триплет)
                     newTriplet1.setLeftLink(lastTriplet);//для триплета newTriplet (новый, правый, второй триплет) присваиваем левой ссылке левый изначальный триплет
                     lastTriplet = newTriplet1;// // правым триплетом во всей коллекции становится наш новый триплет, который мы только что создали
+                    Object[] temp = lastTriplet.getValues();
+                    temp[4]=t;
                 } else { //здесь в массиве триплета есть свободное место, новые триплеты создавать не надо
-                    temp = lastTriplet.getValues();
+                    Object[] temp = lastTriplet.getValues();
                     if (temp[0] != null) { //слева нулевой элемент занят, поэтому ищем свободное место в массиве, начиная справа налево
                         int index = 0; // максимальный индекс 4 (5 элементов в массиве)
                         while (index <= 4) {
@@ -497,17 +533,18 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
                         }
                     } else if(temp[4] != null){
                         int ii=0;
-                        while (ii<=4){
-                            if (temp[ii]!=null){
-                                temp[ii-1] = temp[ii];
-                            }
+                        while (ii<=3){
+                            temp[ii] = temp[ii+1];
                             ii++;
                         }
                         temp[4]=t;
+                    }else{
+                        temp[4] = t;
                     }
                 }
-                return true; // РАЗОБРАТЬСЯ ВНИМАТЕЛЬНЕЕ С ТЕМ, ГДЕ ДОЛЖЕН БЫТЬ. После проверки ошибок надо вернуть true
             }
+
+            return true;
         }
     }
     //offer
@@ -631,7 +668,7 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
     }
 
     @Override
-    public T pop() {//Сделано!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Проверить наличие элементов
+    public T pop() {//Сделано!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         return removeFirst();
     }
 
@@ -646,7 +683,7 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
     }
 
     @Override
-    public boolean contains(Object o) {//Сделано!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Проверить
+    public boolean contains(Object o) {//Сделано!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if (o == null) {
             throw new NullPointerException();
         } else {
@@ -679,52 +716,61 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
     }
 
     @Override
-    public boolean isEmpty() {//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Проверить
-        return false;
+    public boolean isEmpty() {//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        int i = 0;
+        boolean flag = true;
+        while (flag && i<5){
+            if (firstTriplet.getValues()[i]!=null){
+                flag = false;
+            }
+            i++;
+        }
+        return flag;
     }
 
     @Override
-    public Iterator<T> iterator() {//Сделано!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Проверить
+    public Iterator<T> iterator() {//Сделано!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        Iterator<T> iterator = new Iterator<T>(){
-            Triplet<T> tripletDeque = firstTriplet;//при первом вызове начнем с левого триплета
+        Iterator<T> iterator = new Iterator<>() {
+            private Triplet<T> tripletDeque = firstTriplet;//при первом вызове начнем с первого триплета
+
             private int findFirstEl(Triplet<T> tripletDeque) {
-                int ii = 0;
+                int ii = -1;
                 for (int i = 0; i < 5; i++) {
-                    if (tripletDeque.getValues()[i] != null) {
-                        ii = i;
+                    if (tripletDeque.getValues()[i] != null ) {
+                        ii = i - 1;
                         break;
                     }
                 }
                 return ii;
             }
-            int counter = findFirstEl(tripletDeque);
-            private int nowInd = 0;
+            private int nowInd = findFirstEl(tripletDeque);//нашли индекс первого элемента не null или остались на нулевом, если элемент null
 
             @Override
             public boolean hasNext() {
-                return (nowInd < 5);
+                if (nowInd < 4 && tripletDeque.getValues()[nowInd + 1] != null) {//не дошли до конца триплета и не оказались на пустых элементах последнего триплета
+                    return true;
+                } else if (nowInd == 4 && tripletDeque.getRightLink() != null) {//дошли до конца триплета и мы не на последнем триплете
+                    return true;
+                }else{
+                    return false;
+                }
+
             }
             @Override
             public T next() {
-                int count;
-                if (counter == 5) {
+                if (hasNext() && nowInd < 4) {
+                    nowInd++;
+
+                } else if (hasNext() && nowInd == 4) {
                     tripletDeque = tripletDeque.getRightLink();
-                    counter = 0;
-                }
-                if (tripletDeque.getValues()[counter] == null) {
+                    nowInd=0;
+
+                }else{
                     throw new NoSuchElementException();
                 }
-                count = counter;
-                counter++;
-                nowInd++;
-                return (T) tripletDeque.getValues()[counter++];
+                return (T) tripletDeque.getValues()[nowInd];
             }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-                }
         };
         return iterator;
     }
@@ -748,13 +794,14 @@ public class TripletDeque<T> implements Deque<T>, Containerable {
     }
 
     @Override
-    public Object[] getContainerByIndex(int cIndex) {//Сделано!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Проверить
+    public Object[] getContainerByIndex(int cIndex) {//Сделано!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         Triplet<T> tripletDeque = firstTriplet;
         int count = 0;
         while (count< cIndex){
             tripletDeque = tripletDeque.getRightLink();
             count++;
-        }if(tripletDeque==null){
+        }
+        if(tripletDeque==null){
             return null;
         }else{
             return tripletDeque.getValues();
